@@ -53,11 +53,22 @@
         }
     }
 
-    // Track which videos we've already counted this session
-    const sessionCounted = new Set();
+    // Track which videos we've already counted on this page
+    let sessionCounted = new Set();
+    let lastUrl = location.href;
+
+    // Reset session counter when URL changes (SPA navigation)
+    function checkUrlChange() {
+        if (location.href !== lastUrl) {
+            lastUrl = location.href;
+            sessionCounted = new Set();
+            console.log('YT Filter: URL changed, reset view counter');
+        }
+    }
 
     function trackVideoView(videoId) {
-        // Only count once per session
+        checkUrlChange();
+        // Only count once per page view (prevents double-count on re-render)
         if (sessionCounted.has(videoId)) {
             return videoViewCounts[videoId]?.count || 0;
         }
