@@ -183,7 +183,7 @@
         const cookingKeywords = [
             'recipe', 'recipes', 'cooking', 'baking', 'cook', 'bake',
             'kitchen', 'chef', 'food', 'meal', 'dinner', 'lunch', 'breakfast',
-            'dish', 'cuisine', 'rezept', 'kochen', 'backen', 'küche',
+            'dish', 'cuisine', 'rezept', 'kochen', 'backen', 'kueche', 'kuche',
             'essen', 'gericht', 'mahlzeit'
         ];
 
