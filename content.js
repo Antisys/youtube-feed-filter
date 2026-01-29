@@ -28,6 +28,45 @@
         }
     });
 
+    // Video view count tracking (hide after 3 views)
+    let videoViewCounts = {};
+    chrome.storage.local.get(['videoViewCounts'], (result) => {
+        if (result.videoViewCounts) {
+            videoViewCounts = result.videoViewCounts;
+            cleanOldViewCounts();
+        }
+    });
+
+    function cleanOldViewCounts() {
+        // Remove entries older than 30 days
+        const now = Date.now();
+        const maxAge = 30 * 24 * 60 * 60 * 1000;
+        let changed = false;
+        for (const videoId in videoViewCounts) {
+            if (now - videoViewCounts[videoId].lastSeen > maxAge) {
+                delete videoViewCounts[videoId];
+                changed = true;
+            }
+        }
+        if (changed) {
+            chrome.storage.local.set({ videoViewCounts });
+        }
+    }
+
+    function trackVideoView(videoId) {
+        if (!videoViewCounts[videoId]) {
+            videoViewCounts[videoId] = { count: 0, lastSeen: Date.now() };
+        }
+        videoViewCounts[videoId].count++;
+        videoViewCounts[videoId].lastSeen = Date.now();
+        chrome.storage.local.set({ videoViewCounts });
+        return videoViewCounts[videoId].count;
+    }
+
+    function getVideoViewCount(videoId) {
+        return videoViewCounts[videoId]?.count || 0;
+    }
+
     function cleanOldTopics() {
         const now = Date.now();
         const cooldownMs = CONFIG.topicCooldownDays * 24 * 60 * 60 * 1000;
@@ -274,6 +313,14 @@ Respond ONLY with JSON: {"score": 75, "reason": "brief reason"}`;
             el.dataset.ytFiltered = 'true';
             el.dataset.ytScore = video.score;
 
+            // Track view count and hide if shown 3+ times
+            const viewCount = trackVideoView(video.id);
+            if (viewCount >= 3) {
+                el.style.display = 'none';
+                console.log('YT Filter: HIDDEN (seen', viewCount, 'times)', video.title.substring(0, 25));
+                return;
+            }
+
             if (video.score < CONFIG.threshold) {
                 el.classList.add('yt-filter-hidden');
                 el.dataset.ytReason = video.reason || 'Low score';
@@ -285,7 +332,7 @@ Respond ONLY with JSON: {"score": 75, "reason": "brief reason"}`;
             if (CONFIG.showScores && !el.querySelector('.yt-filter-badge')) {
                 const badge = document.createElement('div');
                 badge.className = 'yt-filter-badge';
-                badge.textContent = video.score;
+                badge.textContent = `${video.score}`;
                 badge.style.cssText = `
                     position: absolute;
                     top: 12px;
@@ -300,7 +347,7 @@ Respond ONLY with JSON: {"score": 75, "reason": "brief reason"}`;
                     pointer-events: none;
                     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
                 `;
-                badge.title = video.reason || '';
+                badge.title = `${video.reason || ''} (${viewCount}x)`;
 
                 // Make parent relative and add badge
                 el.style.position = 'relative';
