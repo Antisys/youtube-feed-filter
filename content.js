@@ -169,6 +169,28 @@
         return false;
     }
 
+    // Check if video is cooking/baking content
+    function isCookingVideo(videoElement) {
+        const titleEl = videoElement.querySelector('#video-title') ||
+                        videoElement.querySelector('a#video-title-link') ||
+                        videoElement.querySelector('h3 a');
+        const title = (titleEl?.textContent || titleEl?.getAttribute('title') || '').toLowerCase();
+
+        const channelEl = videoElement.querySelector('#channel-name a') ||
+                          videoElement.querySelector('ytd-channel-name a');
+        const channel = (channelEl?.textContent || '').toLowerCase();
+
+        const cookingKeywords = [
+            'recipe', 'recipes', 'cooking', 'baking', 'cook', 'bake',
+            'kitchen', 'chef', 'food', 'meal', 'dinner', 'lunch', 'breakfast',
+            'dish', 'cuisine', 'rezept', 'kochen', 'backen', 'küche',
+            'essen', 'gericht', 'mahlzeit'
+        ];
+
+        const text = title + ' ' + channel;
+        return cookingKeywords.some(keyword => text.includes(keyword));
+    }
+
     // Check if element is a Short
     function isShort(videoElement) {
         // Check for shorts URL
@@ -232,6 +254,11 @@
                         el.style.display = 'none';
                         el.dataset.ytFiltered = 'short';
                         console.log('YT Filter: HIDDEN short');
+                    // Hide cooking/baking videos
+                    } else if (isCookingVideo(el)) {
+                        el.style.display = 'none';
+                        el.dataset.ytFiltered = 'cooking';
+                        console.log('YT Filter: HIDDEN cooking/baking video');
                     } else {
                         // Check if video was already shown 3+ times
                         const videoInfo = extractVideoInfo(el);
