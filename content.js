@@ -224,7 +224,15 @@
                         el.dataset.ytFiltered = 'short';
                         console.log('YT Filter: HIDDEN short');
                     } else {
-                        elements.push(el);
+                        // Check if video was already shown 3+ times
+                        const videoInfo = extractVideoInfo(el);
+                        if (videoInfo && getVideoViewCount(videoInfo.id) >= 3) {
+                            el.style.display = 'none';
+                            el.dataset.ytFiltered = 'seen-too-often';
+                            console.log('YT Filter: HIDDEN (seen 3+ times)', videoInfo.title.substring(0, 25));
+                        } else {
+                            elements.push(el);
+                        }
                     }
                 }
             });
@@ -313,13 +321,8 @@ Respond ONLY with JSON: {"score": 75, "reason": "brief reason"}`;
             el.dataset.ytFiltered = 'true';
             el.dataset.ytScore = video.score;
 
-            // Track view count and hide if shown 3+ times
+            // Track view count (hiding is done earlier in findVideoElements)
             const viewCount = trackVideoView(video.id);
-            if (viewCount >= 3) {
-                el.style.display = 'none';
-                console.log('YT Filter: HIDDEN (seen', viewCount, 'times)', video.title.substring(0, 25));
-                return;
-            }
 
             if (video.score < CONFIG.threshold) {
                 el.classList.add('yt-filter-hidden');
