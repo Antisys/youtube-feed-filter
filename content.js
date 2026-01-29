@@ -169,8 +169,8 @@
         return false;
     }
 
-    // Check if video is cooking/baking content
-    function isCookingVideo(videoElement) {
+    // Check if video matches blacklisted topics
+    function isBlacklistedTopic(videoElement) {
         const titleEl = videoElement.querySelector('#video-title') ||
                         videoElement.querySelector('a#video-title-link') ||
                         videoElement.querySelector('h3 a');
@@ -180,15 +180,18 @@
                           videoElement.querySelector('ytd-channel-name a');
         const channel = (channelEl?.textContent || '').toLowerCase();
 
-        const cookingKeywords = [
+        const blacklist = [
+            // Cooking/baking
             'recipe', 'recipes', 'cooking', 'baking', 'cook', 'bake',
             'kitchen', 'chef', 'food', 'meal', 'dinner', 'lunch', 'breakfast',
             'dish', 'cuisine', 'rezept', 'kochen', 'backen', 'kueche', 'kuche',
-            'essen', 'gericht', 'mahlzeit'
+            'essen', 'gericht', 'mahlzeit',
+            // Precious metals / investment spam
+            'gold', 'silver', 'silber'
         ];
 
         const text = title + ' ' + channel;
-        return cookingKeywords.some(keyword => text.includes(keyword));
+        return blacklist.some(keyword => text.includes(keyword));
     }
 
     // Check if element is a Short
@@ -254,11 +257,11 @@
                         el.style.display = 'none';
                         el.dataset.ytFiltered = 'short';
                         console.log('YT Filter: HIDDEN short');
-                    // Hide cooking/baking videos
-                    } else if (isCookingVideo(el)) {
+                    // Hide blacklisted topics
+                    } else if (isBlacklistedTopic(el)) {
                         el.style.display = 'none';
-                        el.dataset.ytFiltered = 'cooking';
-                        console.log('YT Filter: HIDDEN cooking/baking video');
+                        el.dataset.ytFiltered = 'blacklisted';
+                        console.log('YT Filter: HIDDEN blacklisted topic');
                     } else {
                         // Check if video was already shown 3+ times
                         const videoInfo = extractVideoInfo(el);
