@@ -1,0 +1,35 @@
+/* YouTube Feed Filter Styles */
+
+.yt-filter-hidden {
+    display: none !important;
+}
+
+.yt-filter-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #4CAF50;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    z-index: 100;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.yt-filter-badge:hover {
+    transform: scale(1.1);
+    cursor: help;
+}
+
+/* Optional: Dim low-scoring videos instead of hiding */
+.yt-filter-dimmed {
+    opacity: 0.4;
+    transition: opacity 0.3s;
+}
+
+.yt-filter-dimmed:hover {
+    opacity: 1;
+}
