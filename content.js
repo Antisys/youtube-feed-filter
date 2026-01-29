@@ -53,7 +53,16 @@
         }
     }
 
+    // Track which videos we've already counted this session
+    const sessionCounted = new Set();
+
     function trackVideoView(videoId) {
+        // Only count once per session
+        if (sessionCounted.has(videoId)) {
+            return videoViewCounts[videoId]?.count || 0;
+        }
+        sessionCounted.add(videoId);
+
         if (!videoViewCounts[videoId]) {
             videoViewCounts[videoId] = { count: 0, lastSeen: Date.now() };
         }
@@ -226,10 +235,16 @@
                     } else {
                         // Check if video was already shown 3+ times
                         const videoInfo = extractVideoInfo(el);
-                        if (videoInfo && getVideoViewCount(videoInfo.id) >= 3) {
-                            el.style.display = 'none';
-                            el.dataset.ytFiltered = 'seen-too-often';
-                            console.log('YT Filter: HIDDEN (seen 3+ times)', videoInfo.title.substring(0, 25));
+                        if (videoInfo) {
+                            // Track view and check count BEFORE processing
+                            const viewCount = trackVideoView(videoInfo.id);
+                            if (viewCount >= 3) {
+                                el.style.display = 'none';
+                                el.dataset.ytFiltered = 'seen-too-often';
+                                console.log('YT Filter: HIDDEN (seen', viewCount, 'times)', videoInfo.title.substring(0, 25));
+                            } else {
+                                elements.push(el);
+                            }
                         } else {
                             elements.push(el);
                         }
@@ -321,8 +336,8 @@ Respond ONLY with JSON: {"score": 75, "reason": "brief reason"}`;
             el.dataset.ytFiltered = 'true';
             el.dataset.ytScore = video.score;
 
-            // Track view count (hiding is done earlier in findVideoElements)
-            const viewCount = trackVideoView(video.id);
+            // View count already tracked in findVideoElements
+            const viewCount = getVideoViewCount(video.id);
 
             if (video.score < CONFIG.threshold) {
                 el.classList.add('yt-filter-hidden');
