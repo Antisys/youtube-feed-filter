@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "YouTube Feed Filter",
-  "version": "1.1",
-  "description": "Filter YouTube recommendations using AI - remove clickbait, fear content, and topic bubbles",
+  "version": "1.2",
+  "description": "Filter YouTube recommendations using local AI (Ollama) - remove clickbait, low-quality content, shorts, and customize topic blacklists",
   "permissions": [
     "storage",
     "activeTab"
@@ -11,6 +11,12 @@
     "https://www.youtube.com/*",
     "http://localhost/*",
     "http://127.0.0.1/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["blacklist.json"],
+      "matches": ["https://www.youtube.com/*"]
+    }
   ],
   "background": {
     "service_worker": "background.js"

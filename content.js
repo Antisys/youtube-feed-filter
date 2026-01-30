@@ -180,8 +180,25 @@
         return false;
     }
 
+    // Blacklist loaded from external file
+    let blacklistKeywords = [];
+
+    // Load blacklist from JSON file
+    fetch(chrome.runtime.getURL('blacklist.json'))
+        .then(response => response.json())
+        .then(data => {
+            blacklistKeywords = data.keywords || [];
+            console.log('YT Filter: Loaded', blacklistKeywords.length, 'blacklist keywords');
+        })
+        .catch(err => {
+            console.log('YT Filter: Could not load blacklist.json, using empty blacklist');
+            blacklistKeywords = [];
+        });
+
     // Check if video matches blacklisted topics
     function isBlacklistedTopic(videoElement) {
+        if (blacklistKeywords.length === 0) return false;
+
         const titleEl = videoElement.querySelector('#video-title') ||
                         videoElement.querySelector('a#video-title-link') ||
                         videoElement.querySelector('h3 a');
@@ -191,18 +208,8 @@
                           videoElement.querySelector('ytd-channel-name a');
         const channel = (channelEl?.textContent || '').toLowerCase();
 
-        const blacklist = [
-            // Cooking/baking
-            'recipe', 'recipes', 'cooking', 'baking', 'cook', 'bake',
-            'kitchen', 'chef', 'food', 'meal', 'dinner', 'lunch', 'breakfast',
-            'dish', 'cuisine', 'rezept', 'kochen', 'backen', 'kueche', 'kuche',
-            'essen', 'gericht', 'mahlzeit',
-            // Precious metals / investment spam
-            'gold', 'silver', 'silber'
-        ];
-
         const text = title + ' ' + channel;
-        return blacklist.some(keyword => text.includes(keyword));
+        return blacklistKeywords.some(keyword => text.includes(keyword));
     }
 
     // Check if element is a Short

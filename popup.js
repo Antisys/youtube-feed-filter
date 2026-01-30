@@ -1,7 +1,7 @@
 // Popup script for YouTube Filter
 
 const DEFAULT_CONFIG = {
-    apiEndpoint: 'http://192.168.1.67:1880/youtube-filter',
+    apiEndpoint: 'http://localhost:11434/api/generate',
     enabled: true,
     showScores: true,
     threshold: 50,
